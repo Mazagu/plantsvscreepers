@@ -1,0 +1,58 @@
+* {
+	box-sizing: border-box;
+}
+
+html, body {
+	width: 100%;
+	height: 100%;
+	margin:0;
+	padding: 0;
+	background: #627d65;
+}
+
+.board {
+	position: relative;
+	border: 2px solid black;
+	box-sizing: content-box;
+	overflow: hidden;
+	margin: 0 auto;
+}
+
+.cell {
+	position: absolute;
+	border: 1px solid #013c01;
+	box-sizing: border-box;
+	background: #ffffff;
+}
+
+.sprite {
+	display: block;
+	position: absolute;
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-size: cover;
+	box-shadow: 1px 1px 4px 1px;
+}
+
+.selector {
+	display: block;
+	background-size: cover;
+	background-repeat: no-repeat;
+}
+
+.plantSelector {
+	position: relative;
+	border: 2px solid black;
+	display: flex;
+	flex-wrap: nowrap;
+	box-sizing: content-box;
+	overflow: hidden;
+	margin: 0 auto;
+	box-shadow: 1px 1px 4px 1px;
+}
+
+.display-treasure {
+	font-size: 3rem;
+	margin: 0 auto;
+	color: white;
+}
