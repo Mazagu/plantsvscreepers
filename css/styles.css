@@ -20,7 +20,7 @@ html, body {
 
 .cell {
 	position: absolute;
-	border: 1px solid #013c01;
+	border: 1px solid #15013c73;
 	box-sizing: border-box;
 	background: #ffffff;
 }
@@ -32,6 +32,15 @@ html, body {
 	background-repeat: no-repeat;
 	background-size: cover;
 	box-shadow: 1px 1px 4px 1px;
+}
+
+.creeper {
+	animation: rock 1s infinite linear;
+}
+
+.leaf {
+	z-index: 100;
+	background-size: contain;
 }
 
 .selector {
@@ -48,11 +57,36 @@ html, body {
 	box-sizing: content-box;
 	overflow: hidden;
 	margin: 0 auto;
-	box-shadow: 1px 1px 4px 1px;
+	background:white;
 }
 
 .display-treasure {
 	font-size: 3rem;
 	margin: 0 auto;
 	color: white;
+}
+
+.digits {
+	display: flex;
+	width: 100%;
+	height: auto;
+	margin: 0 auto;
+	justify-content: center;
+}
+
+.number {
+	width: 40px;
+	height: 60px;
+	background-size: cover;
+	background-repeat: no-repeat;
+}
+
+@keyframes rock {
+	from {
+		transform: rotateZ(-5deg);
+	} 
+
+	to {
+		transform: rotateZ(5deg);
+	}
 }
