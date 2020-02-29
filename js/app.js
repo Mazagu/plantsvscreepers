@@ -1,4 +1,4 @@
-var size = { width: 800, height: 500 };
+var size = { width: window.innerWidth * 0.85, height: window.innerHeight  * 0.85 };
 var cols = 8;
 var rows = 5;
 var cellsize = { width: size.width / cols, height: size.height / rows };
@@ -8,6 +8,7 @@ var cells = [];
 var plants = [];
 var bullets = [];
 var creepers = [];
+var info = document.querySelector("#info");
 var main = document.querySelector("#game");
 var test;
 var plantSelector;
@@ -56,8 +57,8 @@ function setup() {
 	board.style.height = size.height + "px"; 
 
 	plantSelector.classList.add("plantSelector");
-	plantSelector.style.width = size.width + "px";
-	plantSelector.style.height = size.height / rows + "px"; 
+	plantSelector.style.width = cellsize.width + "px"; 
+	plantSelector.style.height = size.height + "px"; 
 	
 	plantTypes.forEach(function(type) {
 		plantCollection.push(new plantSelect(type));
@@ -75,9 +76,9 @@ function setup() {
 			board.appendChild(cells[i][j].sprite);
 		}		
 	}
-	main.appendChild(board);
+	info.appendChild(displayTreasure);
 	main.appendChild(plantSelector);
-	main.appendChild(displayTreasure);
+	main.appendChild(board);
 	updateDisplayTreasure();
 }
 
@@ -156,10 +157,6 @@ function addLeaf(ini, end) {
 	leaves.push(newLeaf);
 }
 
-loop = setInterval(function() {
-	draw();
-},50);
-
 function updateDisplayTreasure() {
 	var content = document.createElement("div");
 	var digits = treasure.toString().split("");
@@ -216,5 +213,3 @@ function finishGame() {
 	clearInterval(loop);
 	gameOver = true;
 }
-
-setup();

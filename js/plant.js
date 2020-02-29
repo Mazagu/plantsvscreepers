@@ -1,3 +1,13 @@
+/*
+*	plant constructor
+*	
+*	This function creates an instance of plant
+*
+*	Arguments:
+*		type: (json) an object contaning the initial properties
+*				of the plant.
+*/
+
 function plant(type) {
 	var self = this;
 	self.sprite = document.createElement("div");
@@ -31,6 +41,16 @@ function plant(type) {
 	}
 }
 
+/*
+*	plantSelect constructor
+*	
+*	This function creates an instance of plant selector
+*
+*	Arguments:
+*		type: (json) an object contaning the initial properties
+*				of the plant.
+*/
+
 function plantSelect(type) {
 	var self = this;
 	self.price = type.price;
@@ -52,6 +72,16 @@ function plantSelect(type) {
 		}
 	});
 }
+
+/*
+*	cell constructor
+*	
+*	This function creates an instance of cell
+*
+*	Arguments:
+*		x: (numeric) cell origin's x position
+*		y: (numeric) cell origin's y position
+*/
 
 function cell(x,y) {
 	var self = this;
@@ -110,6 +140,17 @@ function cell(x,y) {
 	});
 }
 
+/*
+*	leaf constructor
+*	
+*	This function creates an instance of leaf
+*
+*	Arguments:
+*		start: x initial position
+*		end: y end position
+*		velocity: movement (falling) speed
+*/
+
 function leaf(start, end, velocity) {
 	var self = this;
 	self.x = start.x;
@@ -157,6 +198,17 @@ function leaf(start, end, velocity) {
 		self.used = true;
 	});
 }
+
+/*
+*	bullet constructor
+*	
+*	This function creates an instance of bullet
+*
+*	Arguments:
+*		x: (numeric) x initial position
+*		y: (numeric) y initial position
+*		damage: (numeric) amount of damage to inflict
+*/
 
 function bullet(x,y,damage) {
 	var self = this;

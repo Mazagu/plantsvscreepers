@@ -9,6 +9,12 @@ html, body {
 	padding: 0;
 	background: #627d65;
 }
+#info {
+	
+}
+#game {
+	display: flex;
+}
 
 .board {
 	position: relative;
@@ -58,6 +64,7 @@ html, body {
 	overflow: hidden;
 	margin: 0 auto;
 	background:white;
+	flex-direction: column;
 }
 
 .display-treasure {
