@@ -1,7 +1,8 @@
+var game = new app();
 document.addEventListener("DOMContentLoaded", function() {
-	setup();
+	game.setup();
 
-	loop = setInterval(function() {
-		draw();
+	game.loop = setInterval(function() {
+		game.draw();
 	},50);
 });

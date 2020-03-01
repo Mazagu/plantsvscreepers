@@ -1,24 +1,213 @@
-var size = { width: window.innerWidth * 0.85, height: window.innerHeight  * 0.85 };
-var cols = 8;
-var rows = 5;
-var cellsize = { width: size.width / cols, height: size.height / rows };
-var loop;
-var board;
-var cells = [];
-var plants = [];
-var bullets = [];
-var creepers = [];
-var info = document.querySelector("#info");
-var main = document.querySelector("#game");
-var test;
-var plantSelector;
-var plantCollection = [];
-var selectedPlant;
-var leaves = [];
-var treasure = 0;
-var gameOver = false;
-var displayTreasure = document.createElement("div");
-displayTreasure.classList.add("display-treasure");
+function app() {
+	var self = this;
+	self.size = { width: window.innerWidth * 0.85, height: window.innerHeight  * 0.85 };
+	self.cols = 8;
+	self.rows = 5;
+	self.cellsize = { width: self.size.width / self.cols, height: self.size.height / self.rows };
+	self.loop;
+	self.board;
+	self.cells = [];
+	self.plants = [];
+	self.bullets = [];
+	self.creepers = [];
+	self.info = document.querySelector("#info");
+	self.main = document.querySelector("#game");
+	self.test;
+	self.plantSelector;
+	self.plantCollection = [];
+	self.selectedPlant;
+	self.leaves = [];
+	self.treasure = 0;
+	self.gameOver = false;
+	self.frameCount = 0;
+	self.displayTreasure = document.createElement("div");
+	self.displayTreasure.classList.add("display-treasure");
+
+	self.setup = function() {
+		self.board = document.createElement("div");
+		self.plantSelector = document.createElement("div");
+		
+		self.board.classList.add("board");
+		self.board.style.width = self.size.width + "px";
+		self.board.style.height = self.size.height + "px"; 
+
+		self.plantSelector.classList.add("plantSelector");
+		self.plantSelector.style.width = self.cellsize.width + "px"; 
+		self.plantSelector.style.height = self.size.height + "px"; 
+		
+		plantTypes.forEach(function(type) {
+			self.plantCollection.push(new plantSelect(type, self));
+		});
+
+		self.plantCollection.forEach(function(plantItem) {
+			self.plantSelector.appendChild(plantItem.sprite);
+		});
+
+		for(var i = 0; i < self.rows; i++) {
+			self.cells.push(new Array());
+			for(var j = 0; j < self.cols; j++) {
+				self.cells[i].push(new cell(j * self.cellsize.width, i * self.cellsize.height, self));
+				self.board.appendChild(self.cells[i][j].sprite);
+			}		
+		}
+		self.info.appendChild(self.displayTreasure);
+		self.main.appendChild(self.plantSelector);
+		self.main.appendChild(self.board);
+		self.updateDisplayTreasure();
+	}
+
+	self.draw = function() {
+		for(var i = 0; i < self.bullets.length; i++) {
+			if(self.bullets[i].dispose) {
+				self.bullets.splice(i,1);
+			} else {
+				self.bullets[i].update();
+				for(var c = 0; c < self.creepers.length; c++) {
+					if(self.checkCollition(self.bullets[i], self.creepers[c])) {
+						self.bullets[i].dispose = true;
+						self.bullets[i].sprite.remove();
+						self.creepers[c].takeDamage(self.bullets[i].damage);
+						break;
+					}
+				}
+			}
+		}
+
+		for(var i = 0; i < self.creepers.length; i++) {
+			if(self.creepers[i].dispose) {
+				self.creepers.splice(i,1);
+			} else {
+				self.creepers[i].update();
+				var currentRow = self.creepers[i].y / self.cellsize.height;
+				for(var c = 0; c < self.cells[currentRow].length; c++) {
+					if(self.cells[currentRow][c].plant) {
+						if(self.checkPlant(self.creepers[i], self.cells[currentRow][c])) {
+							self.creepers[i].eating = true;
+							self.cells[currentRow][c].plant.takeDamage(self.creepers[i].damage);
+							if(self.cells[currentRow][c].plant.dispose) {
+								self.cells[currentRow][c].plant = null;
+								self.creepers[i].eating = false;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		for(var i = 0; i < self.leaves.length; i++) {
+			if(self.leaves[i].used) {
+				self.leaves.splice(i,1);
+			} else {
+				self.leaves[i].update();
+			}
+		}
+		if(self.frameCount % 100 == 0) {
+			self.addRandomCreeper();
+		}
+		if(self.frameCount % 200 == 0) {
+			self.addRandomLeaf();
+		}
+		self.frameCount++;
+	}
+
+	/*
+	*	Inserts a new creeper instance in a random row
+	*/
+	self.addRandomCreeper = function() {
+		var position = Math.floor(Math.random() * self.rows);
+		var newCreeper = new creeper(
+								self.size.width, 
+								position * self.cellsize.height, 
+								"creeper1",
+								50,
+								1, 
+								1, 
+								1,
+								self
+							); 
+		self.board.appendChild(newCreeper.sprite);
+		self.creepers.push(newCreeper);
+	}
+
+	self.addRandomLeaf = function() {
+		var position = Math.floor(Math.random() * self.cols);
+		var randomEnd = Math.floor(Math.random() * self.size.height);
+		self.addLeaf(
+				{x: position * self.cellsize.width, y: 0 - self.cellsize.height},
+				{x: position * self.cellsize.width, y: randomEnd},
+				self
+			);	
+	}
+
+	self.addLeaf = function(ini, end, parent) {
+		var newLeaf = new leaf(
+								ini, 
+								end, 
+								10, 
+								parent
+							); 
+		self.board.appendChild(newLeaf.sprite);
+		self.leaves.push(newLeaf);
+	}
+
+	self.updateDisplayTreasure = function() {
+		var content = document.createElement("div");
+		var digits = self.treasure.toString().split("");
+		digits.forEach(function(d) {
+			content.appendChild(new self.number(d));
+		});
+		content.classList.add("digits");
+		while(self.displayTreasure.firstChild) {
+			self.displayTreasure.removeChild(self.displayTreasure.firstChild);
+		}
+		self.displayTreasure.appendChild(content);
+
+		self.plantCollection.forEach(function(p) {
+			if(self.treasure >= p.price) {
+				p.sprite.style.filter = "none";
+			} else {
+				p.sprite.style.filter = "brightness(75%)";
+			}
+		});
+	}
+
+	self.number = function(n) {
+		var sprite = document.createElement("div");
+		sprite.classList.add("number");
+		sprite.style.backgroundImage = "url('img/" + n + ".jpg')";
+		return sprite;
+	}
+
+	self.addBullet = function(x,y,damage) {
+		var newbullet = new bullet(x, y, damage, self);
+		self.board.appendChild(newbullet.sprite);
+		self.bullets.push(newbullet);
+	}
+
+	self.checkCollition = function(a,b) {
+		return(	a.y >= b.y && 
+				a.y <= b.y + self.cellsize.height &&
+				a.x >= b.x &&
+				a.x <= b.x + self.cellsize.width
+			);
+	}
+
+	self.checkPlant = function(a,b) {
+		if(b.plant == null) {
+			return false;
+		} else {
+			return(	a.x >= b.x  &&
+					a.x <= b.x + self.cellsize.width / 2
+				);
+		}
+	}
+
+	self.finishGame = function() {
+		clearInterval(self.loop);
+		self.gameOver = true;
+	}
+
+}
 var plantTypes = [
 	{ 	
 		sprite: "leaftree",
@@ -48,168 +237,3 @@ var plantTypes = [
 		cooldown: 3000
 	}
 ];
-function setup() {
-	board = document.createElement("div");
-	plantSelector = document.createElement("div");
-	
-	board.classList.add("board");
-	board.style.width = size.width + "px";
-	board.style.height = size.height + "px"; 
-
-	plantSelector.classList.add("plantSelector");
-	plantSelector.style.width = cellsize.width + "px"; 
-	plantSelector.style.height = size.height + "px"; 
-	
-	plantTypes.forEach(function(type) {
-		plantCollection.push(new plantSelect(type));
-
-	});
-
-	plantCollection.forEach(function(plantItem) {
-		plantSelector.appendChild(plantItem.sprite);
-	});
-
-	for(var i = 0; i < rows; i++) {
-		cells.push(new Array());
-		for(var j = 0; j < cols; j++) {
-			cells[i].push(new cell(j * cellsize.width, i * cellsize.height));
-			board.appendChild(cells[i][j].sprite);
-		}		
-	}
-	info.appendChild(displayTreasure);
-	main.appendChild(plantSelector);
-	main.appendChild(board);
-	updateDisplayTreasure();
-}
-
-var frameCount = 0;
-function draw() {
-	for(var i = 0; i < bullets.length; i++) {
-		if(bullets[i].dispose) {
-			bullets.splice(i,1);
-		} else {
-			bullets[i].update();
-			for(var c = 0; c < creepers.length; c++) {
-				if(checkCollition(bullets[i], creepers[c])) {
-					bullets[i].dispose = true;
-					bullets[i].sprite.remove();
-					creepers[c].takeDamage(bullets[i].damage);
-					console.log("BOOM!");
-					break;
-				}
-			}
-		}
-	}
-
-	for(var i = 0; i < creepers.length; i++) {
-		if(creepers[i].dispose) {
-			creepers.splice(i,1);
-		} else {
-			creepers[i].update();
-			var currentRow = creepers[i].y / cellsize.height;
-			for(var c = 0; c < cells[currentRow].length; c++) {
-				if(cells[currentRow][c].plant) {
-					if(checkPlant(creepers[i], cells[currentRow][c])) {
-						creepers[i].eating = true;
-						cells[currentRow][c].plant.takeDamage(creepers[i].damage);
-						if(cells[currentRow][c].plant.dispose) {
-							cells[currentRow][c].plant = null;
-							creepers[i].eating = false;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	for(var i = 0; i < leaves.length; i++) {
-		if(leaves[i].used) {
-			leaves.splice(i,1);
-		} else {
-			leaves[i].update();
-		}
-	}
-	if(frameCount % 100 == 0) {
-		addRandomCreeper();
-	}
-	if(frameCount % 200 == 0) {
-		addRandomLeaf();
-	}
-	frameCount++;
-}
-
-function addRandomCreeper() {
-	var position = Math.floor(Math.random() * rows);
-	var newCreeper = new creeper((size.width), position * cellsize.height, "creeper1", 50, 1, 1, 1); 
-	board.appendChild(newCreeper.sprite);
-	creepers.push(newCreeper);
-}
-
-function addRandomLeaf() {
-	var position = Math.floor(Math.random() * cols);
-	var randomEnd = Math.floor(Math.random() * size.height);
-	addLeaf({x: position * cellsize.width, y: 0 - cellsize.height},{x: position * cellsize.width, y: randomEnd});	
-}
-
-function addLeaf(ini, end) {
-	var newLeaf = new leaf(ini, end, 10); 
-	board.appendChild(newLeaf.sprite);
-	leaves.push(newLeaf);
-}
-
-function updateDisplayTreasure() {
-	var content = document.createElement("div");
-	var digits = treasure.toString().split("");
-	digits.forEach(function(d) {
-		content.appendChild(new number(d));
-	});
-	content.classList.add("digits");
-	while(displayTreasure.firstChild) {
-		displayTreasure.removeChild(displayTreasure.firstChild);
-	}
-	displayTreasure.appendChild(content);
-
-	plantCollection.forEach(function(p) {
-		if(treasure >= p.price) {
-			p.sprite.style.filter = "none";
-		} else {
-			p.sprite.style.filter = "brightness(75%)";
-		}
-	});
-}
-
-function number(n) {
-	var sprite = document.createElement("div");
-	sprite.classList.add("number");
-	sprite.style.backgroundImage = "url('img/" + n + ".jpg')";
-	return sprite;
-}
-
-function addBullet(x,y,damage) {
-	var newbullet = new bullet(x,y,damage);
-	board.appendChild(newbullet.sprite);
-	bullets.push(newbullet);
-}
-
-function checkCollition(a,b) {
-	return(	a.y >= b.y && 
-			a.y <= b.y + cellsize.height &&
-			a.x >= b.x &&
-			a.x <= b.x + cellsize.width
-		);
-}
-
-function checkPlant(a,b) {
-	if(b.plant == null) {
-		return false;
-	} else {
-		return(	a.x >= b.x + cellsize.width / 2 &&
-				a.x <= b.x + cellsize.width / 2
-			);
-	}
-}
-
-function finishGame() {
-	clearInterval(loop);
-	gameOver = true;
-}

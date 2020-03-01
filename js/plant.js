@@ -8,13 +8,13 @@
 *				of the plant.
 */
 
-function plant(type) {
+function plant(type, parent) {
 	var self = this;
 	self.sprite = document.createElement("div");
 	self.sprite.classList.add("selector");
 	self.sprite.style.backgroundImage = "url('img/" + type.sprite + ".jpg')";
-	self.sprite.style.width = size.width / cols + "px";
-	self.sprite.style.height = size.height / rows + "px";
+	self.sprite.style.width = parent.size.width / parent.cols + "px";
+	self.sprite.style.height = parent.size.height / parent.rows + "px";
 	self.life = type.life;
 	self.damage = type.damage;
 	self.attackSpeed = type.attackSpeed;
@@ -22,11 +22,11 @@ function plant(type) {
 	self.dispose = false;
 
 	self.shoot = function(x,y) {
-		addBullet(x,y, self.damage);
+		parent.addBullet(x,y, self.damage);
 	}
 
-	self.dropSun = function(x,y,x_,y_) {
-		addLeaf({x:x,y:y},{x:x_,y:y_})
+	self.dropLeaf = function(x,y,x_,y_) {
+		parent.addLeaf({x:x,y:y},{x:x_,y:y_}, parent)
 	}
 
 	self.takeDamage = function(d) {
@@ -51,21 +51,21 @@ function plant(type) {
 *				of the plant.
 */
 
-function plantSelect(type) {
+function plantSelect(type, parent) {
 	var self = this;
 	self.price = type.price;
 	self.sprite = document.createElement("div");
 	self.sprite.classList.add("selector");
 	self.sprite.style.backgroundImage = "url('img/" + type.sprite + ".jpg')";
-	self.sprite.style.width = size.width / cols + "px";
-	self.sprite.style.height = size.height / rows + "px";
+	self.sprite.style.width = parent.size.width / parent.cols + "px";
+	self.sprite.style.height = parent.size.height / parent.rows + "px";
 	self.type = type;
 	self.ready = true;
 
 	self.sprite.addEventListener("click", function() {
-		if(self.ready && self.price <= treasure) {
-			selectedPlant = self;
-			plantCollection.forEach(function(sel) {
+		if(self.ready && self.price <= parent.treasure) {
+			parent.selectedPlant = self;
+			parent.plantCollection.forEach(function(sel) {
 				sel.sprite.style.border = "none"
 			});
 			self.sprite.style.border = "4px solid yellow"
@@ -83,26 +83,26 @@ function plantSelect(type) {
 *		y: (numeric) cell origin's y position
 */
 
-function cell(x,y) {
+function cell(x,y, parent) {
 	var self = this;
 	self.x = x;
 	self.y = y;
 	self.sprite = document.createElement("div");
 	self.sprite.classList.add("cell");
 	// self.sprite.style.backgroundImage = "url('img/" + sprite + ".jpg')";
-	self.sprite.style.width = size.width / cols + "px";
-	self.sprite.style.height = size.height / rows + "px";
+	self.sprite.style.width = parent.size.width / parent.cols + "px";
+	self.sprite.style.height = parent.size.height / parent.rows + "px";
 	self.sprite.style.left = self.x + "px";
 	self.sprite.style.top = self.y + "px";
 	self.plant = null;
 	self.plantSeed = function(p) {
 		if(self.plant == null) {
-			self.plant = new plant(p.type);
+			self.plant = new plant(p.type, parent);
 			self.sprite.appendChild(self.plant.sprite);
 			if(self.plant.damage > 0) {
 				var action = setInterval(function() {
-					if(!gameOver) {
-						self.plant.shoot(self.x + cellsize.width / 2, self.y  + cellsize.height / 2);
+					if(!parent.gameOver) {
+						self.plant.shoot(self.x + parent.cellsize.width / 2, self.y  + parent.cellsize.height / 2);
 					} else {
 						clearInterval(action);
 					}
@@ -111,8 +111,8 @@ function cell(x,y) {
 
 			if(self.plant.suns) {
 				var action = setInterval(function() {
-					if(!gameOver) {
-						self.plant.dropSun(self.x + cellsize.width / 2, self.y, self.x + cellsize.width / 2, self.y + cellsize.height * 0.75);
+					if(!parent.gameOver) {
+						self.plant.dropLeaf(self.x + parent.cellsize.width / 2, self.y, self.x + parent.cellsize.width / 2, self.y + parent.cellsize.height * 0.75);
 					} else {
 						clearInterval(action);
 					}
@@ -122,11 +122,11 @@ function cell(x,y) {
 	}
 
 	self.sprite.addEventListener("click", function() {
-		if(selectedPlant && self.plant == null) {
-			treasure -= selectedPlant.type.price;
-			updateDisplayTreasure();
-			var temp = selectedPlant;
-			selectedPlant = null;
+		if(parent.selectedPlant && self.plant == null) {
+			parent.treasure -= parent.selectedPlant.type.price;
+			parent.updateDisplayTreasure();
+			var temp = parent.selectedPlant;
+			parent.selectedPlant = null;
 			temp.sprite.style.border = "none"
 			self.plantSeed(temp);
 			temp.ready = false;
@@ -151,7 +151,7 @@ function cell(x,y) {
 *		velocity: movement (falling) speed
 */
 
-function leaf(start, end, velocity) {
+function leaf(start, end, velocity, parent) {
 	var self = this;
 	self.x = start.x;
 	self.y = start.y;
@@ -160,8 +160,8 @@ function leaf(start, end, velocity) {
 	self.sprite.classList.add("sprite");
 	self.sprite.classList.add("leaf");
 	self.sprite.style.backgroundImage = "url('img/leaf.jpg')";
-	self.sprite.style.width = size.width / cols / 2 + "px";
-	self.sprite.style.height = size.height / rows / 4 + "px";
+	self.sprite.style.width = parent.size.width / parent.cols / 2 + "px";
+	self.sprite.style.height = parent.size.height / parent.rows / 4 + "px";
 	self.sprite.style.left = self.x + "px";
 	self.sprite.style.top = self.y + "px";
 
@@ -192,8 +192,8 @@ function leaf(start, end, velocity) {
 	}
 
 	self.sprite.addEventListener("click", function() {
-		treasure += 50;
-		updateDisplayTreasure();
+		parent.treasure += 50;
+		parent.updateDisplayTreasure();
 		self.sprite.remove();
 		self.used = true;
 	});
@@ -210,7 +210,7 @@ function leaf(start, end, velocity) {
 *		damage: (numeric) amount of damage to inflict
 */
 
-function bullet(x,y,damage) {
+function bullet(x,y,damage, parent) {
 	var self = this;
 	self.x = x;
 	self.y = y;
@@ -219,8 +219,8 @@ function bullet(x,y,damage) {
 	self.sprite.classList.add("sprite");
 	self.sprite.classList.add("leaf");
 	self.sprite.style.backgroundImage = "url('img/bullet.jpg')";
-	self.sprite.style.width = size.width / cols / 2 + "px";
-	self.sprite.style.height = size.height / rows / 5 + "px";
+	self.sprite.style.width = parent.size.width / parent.cols / 2 + "px";
+	self.sprite.style.height = parent.size.height / parent.rows / 5 + "px";
 	self.sprite.style.left = self.x + "px";
 	self.sprite.style.top = self.y + "px";
 
@@ -236,7 +236,7 @@ function bullet(x,y,damage) {
 
 	self.move = function() {
 		self.x += self.velocity;
-		if(self.x >= size.width) {
+		if(self.x >= parent.size.width) {
 			self.velocity = 0;
 			self.dispose = true;
 			self.sprite.remove();

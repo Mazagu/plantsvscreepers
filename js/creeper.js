@@ -38,7 +38,7 @@
 *			updates the position of the sprite
 */
 
-function creeper(x, y, sprite, life, damage, attackSpeed, velocity) {
+function creeper(x, y, sprite, life, damage, attackSpeed, velocity, parent) {
 	var self = this;
 	self.x = x;
 	self.y = y;
@@ -46,8 +46,8 @@ function creeper(x, y, sprite, life, damage, attackSpeed, velocity) {
 	self.sprite.classList.add("sprite");
 	self.sprite.classList.add("creeper");
 	self.sprite.style.backgroundImage = "url('img/" + sprite + ".jpg')";
-	self.sprite.style.width = size.width / cols + "px";
-	self.sprite.style.height = size.height / rows + "px";
+	self.sprite.style.width = parent.size.width / parent.cols + "px";
+	self.sprite.style.height = parent.size.height / parent.rows + "px";
 	self.sprite.style.left = self.x + "px";
 	self.sprite.style.top = self.y + "px";
 	self.life = life;
@@ -76,11 +76,11 @@ function creeper(x, y, sprite, life, damage, attackSpeed, velocity) {
 
 	self.move = function() {
 		self.x -= self.velocity;
-		if(self.x <= 0 - cellsize.width) {
+		if(self.x <= 0 - parent.cellsize.width) {
 			self.dispose = true;
 			self.sprite.remove();
 			self.velocity = 0;
-			finishGame();
+			parent.finishGame();
 		}
 	}
 
